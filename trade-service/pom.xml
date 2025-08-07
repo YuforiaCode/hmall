@@ -9,7 +9,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>item-service</artifactId>
+    <artifactId>trade-service</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -24,6 +24,7 @@
             <artifactId>hm-common</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <!--api-->
         <dependency>
             <groupId>com.heima</groupId>
             <artifactId>hm-api</artifactId>
