@@ -40,7 +40,7 @@ public class ItemController {
     @GetMapping
     public List<ItemDTO> queryItemByIds(@RequestParam("ids") List<Long> ids){
         //模拟业务延迟
-        ThreadUtil.sleep(500);
+        //ThreadUtil.sleep(500);
         return itemService.queryItemByIds(ids);
     }
 
