@@ -25,4 +25,10 @@ public interface ItemClient {
      */
     @PutMapping("/items/stock/deduct")
     void deductStock(@RequestBody List<OrderDetailDTO> items);
+
+    /**
+     * 批量恢复库存
+     */
+    @PutMapping("/items/stock/restore")
+    void restoreStock(@RequestBody List<OrderDetailDTO> items);
 }

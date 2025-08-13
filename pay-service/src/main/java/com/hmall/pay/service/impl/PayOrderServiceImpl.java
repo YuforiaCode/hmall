@@ -68,11 +68,25 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         }
         // 5.修改订单状态
         //tradeClient.markOrderPaySuccess(po.getBizOrderNo());
+        /*
+            测试延迟消息时，将下面代码全部注释掉，也就是人为模拟支付成功但是没有修改订单状态的情况
+            测试时设置延迟信息发送的时间为10秒(方便测试观察，正常设置30分钟)，测试后发现数据库订单支付状态变为已付款
+            说明测试成功，因为延迟信息检测发现订单状态未支付但是支付流水是已付款，所以就会标记订单状态为已支付
+            项目正常使用，下面代码通过发送支付状态通知来修改订单状态，如果真的出现发送通知失败的情况也有延迟消息兜底
+         */
         try {
             rabbitTemplate.convertAndSend("pay.direct", "pay.success", po.getBizOrderNo());
         }catch (Exception e){
             log.error("发送支付状态通知失败，订单id：{}", po.getBizOrderNo(), e);
         }
+    }
+
+    @Override
+    public void updateStatusByOrderId(Long orderId, Integer status) {
+        lambdaUpdate()
+                .set(PayOrder::getStatus, status)
+                .eq(PayOrder::getBizOrderNo, orderId)
+                .update();
     }
 
     public boolean markPayOrderSuccess(Long id, LocalDateTime successTime) {
