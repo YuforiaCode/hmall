@@ -2,10 +2,12 @@ package com.hmall.item.es;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hmall.item.domain.po.Item;
 import com.hmall.item.domain.po.ItemDoc;
 import com.hmall.item.service.IItemService;
 import org.apache.http.HttpHost;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.List;
 
 @SpringBootTest(properties = {"spring.profiles.active=local", "seata.enabled=false"})
 public class ElasticDocumentTest {
@@ -92,6 +95,37 @@ public class ElasticDocumentTest {
         );
         //3.发送请求
         client.update(request, RequestOptions.DEFAULT);
+    }
+
+    /**
+     * 文档批处理
+     */
+    @Test
+    void testBulkDocument() throws IOException {
+        int pageNo = 1, pageSize = 500;
+        while (true) {
+            //1.准备文档数据
+            Page<Item> page = itemService.lambdaQuery()
+                    .eq(Item::getStatus, 1)  //上架商品
+                    .page(Page.of(pageNo, pageSize));
+            List<Item> records = page.getRecords();
+            if (records == null || records.isEmpty()) {
+                return;
+            }
+
+            //2.准备request
+            BulkRequest request = new BulkRequest();
+            //3.准备请求参数
+            for (Item item : records) {
+                request.add(new IndexRequest("items")
+                        .id(item.getId().toString())
+                        .source(JSONUtil.toJsonStr(BeanUtil.copyProperties(item, ItemDoc.class)), XContentType.JSON));
+            }
+            //4.发送请求
+            client.bulk(request, RequestOptions.DEFAULT);
+            //5.翻页
+            pageNo++;
+        }
     }
 
     @BeforeEach
