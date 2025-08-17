@@ -20,7 +20,7 @@ public interface ItemClient {
     /**
      * 根据id查询商品
      */
-    @GetMapping("{id}")
+    @GetMapping("/items/{id}")
     ItemDTO queryItemById(@PathVariable("id") Long id);
 
     /**
