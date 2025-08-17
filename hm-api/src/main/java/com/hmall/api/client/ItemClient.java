@@ -4,10 +4,7 @@ import com.hmall.api.client.fallback.ItemClientFallbackFactory;
 import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +16,12 @@ public interface ItemClient {
      */
     @GetMapping("/items")  //请求方式、请求路径
     List<ItemDTO> queryItemByIds(@RequestParam("ids") Collection<Long> ids);  //返回值类型、请求参数
+
+    /**
+     * 根据id查询商品
+     */
+    @GetMapping("{id}")
+    ItemDTO queryItemById(@PathVariable("id") Long id);
 
     /**
      * 批量扣减库存

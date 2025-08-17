@@ -18,8 +18,14 @@ public class ItemClientFallbackFactory implements FallbackFactory<ItemClient> {
 
             @Override
             public List<ItemDTO> queryItemByIds(Collection<Long> ids) {
-                log.error("查询商品失败!", cause);
+                log.error("根据id批量查询商品失败!", cause);
                 return CollUtils.emptyList();
+            }
+
+            @Override
+            public ItemDTO queryItemById(Long id) {
+                log.error("根据id查询商品失败!", cause);
+                return null;
             }
 
             @Override
