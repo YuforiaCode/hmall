@@ -24,6 +24,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static com.hmall.item.constants.MQConstants.*;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -39,9 +41,9 @@ public class ItemListener {
      * 监听新增商品  新增  index
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(name = "item.index.save.queue", durable = "true"),
-            exchange = @Exchange(name = "item.direct", type = ExchangeTypes.DIRECT),
-            key = "item.index.save"
+            value = @Queue(name = ITEM_INDEX_SAVE_QUEUE_NAME, durable = "true"),
+            exchange = @Exchange(name = ITEM_EXCHANGE_NAME, type = ExchangeTypes.DIRECT),
+            key = ITEM_INDEX_SAVE_KEY
     ))
     public void listenSaveItem(Long id) throws IOException {
         //读取数据库对象
@@ -67,9 +69,9 @@ public class ItemListener {
      * 监听更新商品状态  局部更新  update
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(name = "item.updateStatus.queue", durable = "true"),
-            exchange = @Exchange(name = "item.direct", type = ExchangeTypes.DIRECT),
-            key = "item.updateStatus"
+            value = @Queue(name = ITEM_UPDATE_STATUS_QUEUE_NAME, durable = "true"),
+            exchange = @Exchange(name = ITEM_EXCHANGE_NAME, type = ExchangeTypes.DIRECT),
+            key = ITEM_UPDATE_STATUS_KEY
     ))
     public void listenUpdateItemStatus(Long id) throws IOException {
         //读取数据库对象
@@ -95,9 +97,9 @@ public class ItemListener {
      * 监听更新商品  全局更新  index
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(name = "item.index.update.queue", durable = "true"),
-            exchange = @Exchange(name = "item.direct", type = ExchangeTypes.DIRECT),
-            key = "item.index.update"
+            value = @Queue(name = ITEM_INDEX_UPDATE_QUEUE_NAME, durable = "true"),
+            exchange = @Exchange(name = ITEM_EXCHANGE_NAME, type = ExchangeTypes.DIRECT),
+            key = ITEM_INDEX_UPDATE_KEY
     ))
     public void listenUpdateItem(Long id) throws IOException {
         //读取数据库对象
@@ -123,9 +125,9 @@ public class ItemListener {
      * 监听删除商品  delete
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(name = "item.delete.queue", durable = "true"),
-            exchange = @Exchange(name = "item.direct", type = ExchangeTypes.DIRECT),
-            key = "item.delete"
+            value = @Queue(name = ITEM_DELETE_QUEUE_NAME, durable = "true"),
+            exchange = @Exchange(name = ITEM_EXCHANGE_NAME, type = ExchangeTypes.DIRECT),
+            key = ITEM_DELETE_KEY
     ))
     public void listenDeleteItem(Long id) throws IOException {
         //准备request对象

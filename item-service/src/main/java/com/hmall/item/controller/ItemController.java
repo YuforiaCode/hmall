@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.hmall.item.constants.MQConstants.*;
+
 @Api(tags = "商品管理相关接口")
 @RestController
 @RequestMapping("/items")
@@ -60,7 +62,7 @@ public class ItemController {
         boolean save = itemService.save(bean);
         System.out.println("表单：" + bean + "保存结果：" + save);
         //更新索引库
-        rabbitTemplate.convertAndSend("item.direct", "item.index.save", bean.getId());
+        rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_INDEX_SAVE_KEY, bean.getId());
     }
 
     @ApiOperation("更新商品状态")
@@ -71,7 +73,7 @@ public class ItemController {
         item.setStatus(status);
         itemService.updateById(item);
         //更新索引库
-        rabbitTemplate.convertAndSend("item.direct", "item.updateStatus", item.getId());
+        rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_UPDATE_STATUS_KEY, item.getId());
     }
 
     @ApiOperation("更新商品")
@@ -82,7 +84,7 @@ public class ItemController {
         // 更新
         itemService.updateById(BeanUtils.copyBean(item, Item.class));
         //更新索引库
-        rabbitTemplate.convertAndSend("item.direct", "item.index.update", item.getId());
+        rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_INDEX_UPDATE_KEY, item.getId());
     }
 
     @ApiOperation("根据id删除商品")
@@ -90,7 +92,7 @@ public class ItemController {
     public void deleteItemById(@PathVariable("id") Long id) {
         itemService.removeById(id);
         //更新索引库
-        rabbitTemplate.convertAndSend("item.direct", "item.delete", id);
+        rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_DELETE_KEY, id);
     }
 
     @ApiOperation("批量扣减库存")
