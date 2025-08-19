@@ -98,7 +98,7 @@ public class ElasticDocumentTest {
     }
 
     /**
-     * 文档批处理
+     * 文档批处理(在创建索引库之后执行)
      */
     @Test
     void testBulkDocument() throws IOException {

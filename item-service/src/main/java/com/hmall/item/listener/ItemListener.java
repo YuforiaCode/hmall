@@ -68,7 +68,7 @@ public class ItemListener {
     /**
      * 监听更新商品状态  局部更新  update
      */
-    @RabbitListener(bindings = @QueueBinding(
+    /*@RabbitListener(bindings = @QueueBinding(
             value = @Queue(name = ITEM_UPDATE_STATUS_QUEUE_NAME, durable = "true"),
             exchange = @Exchange(name = ITEM_EXCHANGE_NAME, type = ExchangeTypes.DIRECT),
             key = ITEM_UPDATE_STATUS_KEY
@@ -91,7 +91,7 @@ public class ItemListener {
         restHighLevelClient.update(request, RequestOptions.DEFAULT);
 
         log.info("监听到RabbitMQ发送的局部更新商品状态的通知信息，开始同步更新索引库的数据");
-    }
+    }*/
 
     /**
      * 监听更新商品  全局更新  index

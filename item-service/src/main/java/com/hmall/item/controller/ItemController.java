@@ -73,7 +73,7 @@ public class ItemController {
         item.setStatus(status);
         itemService.updateById(item);
         //更新索引库
-        rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_UPDATE_STATUS_KEY, item.getId());
+        //rabbitTemplate.convertAndSend(ITEM_EXCHANGE_NAME, ITEM_UPDATE_STATUS_KEY, item.getId());
     }
 
     @ApiOperation("更新商品")
