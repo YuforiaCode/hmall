@@ -11,12 +11,15 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 //@SpringBootTest(properties = {"spring.profiles.active=local", "seata.enabled=false"})
 public class ElasticSearchTest {
@@ -88,7 +91,27 @@ public class ElasticSearchTest {
     }
 
     /**
-     * 封装解析结果的api代码
+     * 高亮显示
+     */
+    @Test
+    void testHighlight() throws IOException {
+        //1.创建request对象
+        SearchRequest request = new SearchRequest("items");
+        //2.组织DSL参数
+        //2.1.query条件
+        request.source().query(QueryBuilders.matchQuery("name", "脱脂牛奶"));
+        //2.2.高亮条件  highlight方法有两种，一种直接new，一种通过SearchSourceBuilder
+        request.source().highlighter(SearchSourceBuilder.highlight().field("name"));
+
+        //3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        //4.解析结果
+        parseResponseResult(response);
+    }
+
+    /**
+     * 封装解析结果的API
      */
     private static void parseResponseResult(SearchResponse response) {
         SearchHits searchHits = response.getHits();
@@ -102,7 +125,15 @@ public class ElasticSearchTest {
             String json = hit.getSourceAsString();
             //4.2.2.转为itemDoc
             ItemDoc itemDoc = JSONUtil.toBean(json, ItemDoc.class);
-
+            //4.3.处理高亮结果
+            Map<String, HighlightField> hfs = hit.getHighlightFields();
+            if (hfs != null && !hfs.isEmpty()) {
+                //4.3.1.根据高亮字段名获取高亮结果
+                HighlightField hf = hfs.get("name");
+                //4.3.2.获取高亮结果，覆盖非高亮结果
+                String hfName = hf.getFragments()[0].string();
+                itemDoc.setName(hfName);
+            }
             System.out.println("itemDoc = " + itemDoc);
         }
     }
