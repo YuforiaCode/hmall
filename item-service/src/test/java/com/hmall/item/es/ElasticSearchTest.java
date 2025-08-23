@@ -161,7 +161,7 @@ public class ElasticSearchTest {
         for (SearchHit hit : hits) {
             //4.2.1.获取source结果
             String json = hit.getSourceAsString();
-            //4.2.2.转为itemDoc
+            //4.2.2.转为ItemDoc
             ItemDoc itemDoc = JSONUtil.toBean(json, ItemDoc.class);
             //4.3.处理高亮结果
             Map<String, HighlightField> hfs = hit.getHighlightFields();
