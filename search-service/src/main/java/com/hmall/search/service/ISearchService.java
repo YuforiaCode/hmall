@@ -5,6 +5,7 @@ import com.hmall.api.dto.ItemDTO;
 import com.hmall.common.domain.PageDTO;
 import com.hmall.search.domain.po.Item;
 import com.hmall.search.domain.query.ItemPageQuery;
+import com.hmall.search.domain.vo.CategoryAndBrandVo;
 
 import java.io.IOException;
 
@@ -22,4 +23,9 @@ public interface ISearchService extends IService<Item> {
      * 基于ES搜索商品
      */
     PageDTO<ItemDTO> EsSearch(ItemPageQuery query) throws IOException;
+
+    /**
+     * 获得分类和品牌的聚合值
+     */
+    CategoryAndBrandVo getFilters(ItemPageQuery query);
 }

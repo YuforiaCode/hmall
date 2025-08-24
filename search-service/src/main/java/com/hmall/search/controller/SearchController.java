@@ -7,13 +7,12 @@ import com.hmall.api.dto.ItemDTO;
 import com.hmall.common.domain.PageDTO;
 import com.hmall.search.domain.po.Item;
 import com.hmall.search.domain.query.ItemPageQuery;
+import com.hmall.search.domain.vo.CategoryAndBrandVo;
 import com.hmall.search.service.ISearchService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -39,5 +38,11 @@ public class SearchController {
         // 封装并返回
         return PageDTO.of(result, ItemDTO.class);*/
         return searchService.EsSearch(query);
+    }
+
+    @ApiOperation("过滤商品栏")
+    @PostMapping("/filters")
+    public CategoryAndBrandVo getFilters(@RequestBody ItemPageQuery query) {
+        return searchService.getFilters(query);
     }
 }

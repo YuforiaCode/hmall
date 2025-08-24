@@ -9,6 +9,7 @@ import com.hmall.common.domain.PageDTO;
 import com.hmall.search.domain.po.Item;
 import com.hmall.search.domain.po.ItemDoc;
 import com.hmall.search.domain.query.ItemPageQuery;
+import com.hmall.search.domain.vo.CategoryAndBrandVo;
 import com.hmall.search.mapper.SearchMapper;
 import com.hmall.search.service.ISearchService;
 import org.elasticsearch.action.search.SearchRequest;
@@ -22,6 +23,9 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
@@ -124,6 +128,85 @@ public class SearchServiceImpl extends ServiceImpl<SearchMapper, Item> implement
 
         //5.返回结果
         return result;
+    }
+
+    /**
+     * 获得分类和品牌的聚合值
+     */
+    public CategoryAndBrandVo getFilters(ItemPageQuery query) {
+        //1.准备request对象
+        SearchRequest request = new SearchRequest("items");
+
+        //2.组织DSL参数
+        //2.1.bool查询条件
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        if (StrUtil.isNotBlank(query.getKey())) {
+            //关键词查询(按照相关性算分)
+            boolQuery.must(QueryBuilders.matchQuery("name", query.getKey()));
+        }
+        if (StrUtil.isNotBlank(query.getCategory())) {
+            //分类过滤
+            boolQuery.filter(QueryBuilders.termQuery("category", query.getCategory()));
+        }
+        if (StrUtil.isNotBlank(query.getBrand())) {
+            //品牌过滤
+            boolQuery.filter(QueryBuilders.termQuery("brand", query.getBrand()));
+        }
+        if (query.getMaxPrice() != null) {
+            //价格最大值过滤
+            boolQuery.filter(QueryBuilders.rangeQuery("price").lte(query.getMaxPrice()));
+        }
+        if (query.getMinPrice() != null) {
+            //价格最小值过滤
+            boolQuery.filter(QueryBuilders.rangeQuery("price").gte(query.getMinPrice()));
+        }
+        request.source().query(boolQuery);
+
+        //2.2.分页
+        request.source().size(0);
+
+        //2.3.聚合条件
+        String brandAggName = "brand_agg";
+        String categoryAggName = "category_agg";
+        request.source().aggregation(
+                AggregationBuilders.terms(brandAggName).field("brand").size(10)
+        );
+        request.source().aggregation(
+                AggregationBuilders.terms(categoryAggName).field("category").size(10)
+        );
+        List<String> brandList = null;
+        List<String> categoryList = null;
+
+        try {
+            //3.发送请求
+            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+            //4.解析结果
+            Aggregations aggregations = response.getAggregations();
+            //4.1.根据聚合名称获取对应的聚合
+            Terms brandTerms = aggregations.get(brandAggName);
+            Terms categoryTerms = aggregations.get(categoryAggName);
+            //4.2.获取buckets
+            List<? extends Terms.Bucket> brandBuckets = brandTerms.getBuckets();
+            List<? extends Terms.Bucket> categoryBuckets = categoryTerms.getBuckets();
+            //4.3.遍历获取每一个bucket
+            brandList = new ArrayList<>();
+            categoryList = new ArrayList<>();
+            for (Terms.Bucket brandBucket : brandBuckets) {
+                brandList.add(brandBucket.getKeyAsString());
+            }
+            for (Terms.Bucket categoryBucket : categoryBuckets) {
+                categoryList.add(categoryBucket.getKeyAsString());
+            }
+        } catch (IOException e) {
+            log.error("ES聚合失败，出现异常", e);
+        }
+
+        //5.返回结果
+        CategoryAndBrandVo categoryAndBrandVo = new CategoryAndBrandVo();
+        categoryAndBrandVo.setCategory(categoryList);
+        categoryAndBrandVo.setBrand(brandList);
+        return categoryAndBrandVo;
     }
 
     /**
